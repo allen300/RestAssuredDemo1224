@@ -88,7 +88,9 @@ public class TesterHomeTest {
                 .body("topics.title[0]",equalTo(operand1))
                 .body("topics.size()",equalTo(23))
                 .body("topics.find {it.title.contains('TesterHome')}.title",equalTo(operand))
+                //标题发生变化会报错
                 .body("topics.findAll {it.title.contains('TesterHome')}.title[0]",equalTo(operand))
+                //返回的是数组两种方法都可以，
 
 
         ;
