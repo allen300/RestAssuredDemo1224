@@ -79,13 +79,13 @@ public class TesterHomeTest {
     public void JsonPathTest(){
 
         final String operand = "TesterHome 上海 2018 年第三期沙龙圆满结束&PPT 下载";
-        String operand1 = "您有一份来自社区的礼物请查收";
+        String title = "您有一份来自社区的礼物请查收";
         given()
                 .proxy(8889)
                 .when()
                 .get("https://testerhome.com/api/v3/topics.json")
                 .then()
-                .body("topics.title[0]",equalTo(operand1))
+                .body("topics.title[0]",equalTo(title))
                 .body("topics.size()",equalTo(23))
                 .body("topics.find {it.title.contains('TesterHome')}.title",equalTo(operand))
                 //标题发生变化会报错
