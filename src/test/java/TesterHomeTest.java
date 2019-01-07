@@ -1,5 +1,10 @@
+import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.*;
 import static io.restassured.matcher.RestAssuredMatchers.*;
@@ -50,7 +55,8 @@ public class TesterHomeTest {
                 .formParam("Submit","%E7%99%BB%E5%BD%95")
                 .when().post("http://116.62.196.57:8080/j_acegi_security_check")
                 .then()
-                .statusCode(302);
+                .statusCode(302)
+        ;
     }
 
     @Test
@@ -90,10 +96,82 @@ public class TesterHomeTest {
                 .body("topics.find {it.title.contains('TesterHome')}.title",equalTo(operand))
                 //标题发生变化会报错
                 .body("topics.findAll {it.title.contains('TesterHome')}.title[0]",equalTo(operand))
-                //返回的是数组两种方法都可以，
+        //返回的是数组两种方法都可以，
+        ;
 
+    }
+    @Test
+    public void JsonPathTest_homeworkthree(){
+
+        final String operand = "TesterHome 上海 2018 年第三期沙龙圆满结束&PPT 下载";
+        String title = "您有一份来自社区的礼物请查收";
+        given()
+                .proxy(8889)
+                .when()
+                .get("https://testerhome.com/api/v3/topics.json")
+                .then()
+                .body("topics.replies_count[10]",equalTo(6))
 
         ;
+
+    }
+
+    @Test
+    public void timeoutTest(){
+
+        given().log().all()
+                .proxy(8889)
+                .when().log().all().get("https://testerhome.com/api/v3/topics.json")
+                .then().log().all()
+                .statusCode(200).time(lessThanOrEqualTo(2500L), TimeUnit.MILLISECONDS)
+                .body("topics[0].title",containsString("总结"));
+
+    }
+
+    @Test
+    public void extract_test(){
+
+        HashMap<String,Object> topic =given().log().all()
+                .when().get("https://testerhome.com/api/v3/topics.json").prettyPeek()
+                .then().log().all().statusCode(200)
+                .extract().path("topics.find{it.title.contains(\"论程序员\")}");
+        System.out.println(topic);
+
+        String login =given().log().all()
+                .when().get("https://testerhome.com/api/v3/topics.json").prettyPeek()
+                .then().log().all().statusCode(200)
+                .extract().path("topics.find{it.title.contains(\"论程序员\")}.user.login");
+        System.out.println(login);
+
+
+
+    }
+    @Test
+    public void extract_test2(){
+
+
+        ValidatableResponse vlueResponse= given().log().all()
+                .when().get("https://testerhome.com/api/v3/topics.json").prettyPeek()
+                .then().log().all().statusCode(200);
+        HashMap<String,Object> topic = vlueResponse.extract().path("topics.find{it.title.contains(\"论程序员\")}");
+        String login = vlueResponse.extract().path("topics.find{it.title.contains(\"论程序员\")}.user.login");
+
+        System.out.println(topic);
+        System.out.println(login);
+
+    }
+    @Test
+    public void extract_test3(){
+
+        Response response= given().log().all()
+                .when().get("https://testerhome.com/api/v3/topics.json").prettyPeek()
+                .then().log().all().statusCode(200)
+                .extract().response();
+        HashMap<String,Object> topic = response.path("topics.find{it.title.contains(\"论程序员\")}");
+        String login = response.path("topics.find{it.title.contains(\"论程序员\")}.user.login");
+
+        System.out.println(topic);
+        System.out.println(login);
 
     }
 }
